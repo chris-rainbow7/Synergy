@@ -1,0 +1,61 @@
+<template>
+<div id="GetLocation" v-cloak>
+
+  <p>
+    <button @click="locateMe" id="button">Get location</button>
+  </p>
+  
+  <div v-if="errorStr">
+    Sorry, but the following error
+    occurred: {{errorStr}}
+  </div>
+  
+  <div v-if="gettingLocation">
+    <i>Getting your location...</i>
+  </div>
+  
+  <div v-if="location">
+    Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
+  </div>
+  
+</div>
+</template>
+
+<script>
+export default {
+data () {
+    return{
+        location:null,
+        gettingLocation: false,
+        errorStr:null
+    }
+},
+methods: {
+    async getLocation() {
+      
+        return new Promise((resolve, reject) => {
+            if(!("geolocation" in navigator)) {
+            reject(new Error('Geolocation is not available.'));
+            }
+            navigator.geolocation.getCurrentPosition(pos => {
+            resolve(pos);
+            }, err => {
+            reject(err);
+            });
+      });
+    },
+
+    async locateMe() {
+      this.gettingLocation = true;
+      try {
+        this.gettingLocation = false;
+        this.location = await this.getLocation();
+      } catch(e) {
+        this.gettingLocation = false;
+        this.errorStr = e.message;
+      }  
+      this.$emit('locateMe',this.location);   
+    }
+  }
+}
+</script>
